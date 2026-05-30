@@ -1,0 +1,28 @@
+<div class="recorder">
+  <button
+    type="button"
+    class="record-btn"
+    [class.recording]="(recording.state$ | async) === 'recording'"
+    [disabled]="locked"
+    (click)="onMainClick()"
+    [attr.aria-pressed]="(recording.state$ | async) === 'recording'"
+    aria-label="Toggle recording"
+  >
+    <span class="inner"></span>
+  </button>
+  <div class="meta">
+    <span class="hint" *ngIf="(recording.state$ | async) !== 'recording'">
+      Tap to record
+    </span>
+    <span class="timer" *ngIf="(recording.state$ | async) === 'recording'">
+      {{ formatElapsed((recording.elapsedMs$ | async) ?? 0) }}
+    </span>
+  </div>
+  <div
+    class="wave-shell"
+    [class.live]="(recording.state$ | async) === 'recording'"
+    aria-hidden="true"
+  >
+    <canvas #waveCanvas class="wave"></canvas>
+  </div>
+</div>

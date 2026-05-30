@@ -1,0 +1,28 @@
+<section class="wrap" *ngIf="suggestions && suggestions.length">
+  <h2>Better ways to say it</h2>
+  <ul class="list">
+    <li class="item" *ngFor="let s of suggestions; let i = index">
+      <div class="row">
+        <span class="idx">{{ i + 1 }}</span>
+        <p class="text">{{ s.text }}</p>
+        <button
+          type="button"
+          class="play"
+          (click)="speak(s.text)"
+          [attr.aria-label]="'Play suggestion ' + (i + 1)"
+        >
+          Play
+        </button>
+        <button
+          type="button"
+          class="copy"
+          (click)="copy(s.text, i)"
+          [attr.aria-label]="'Copy suggestion ' + (i + 1)"
+        >
+          {{ copiedIndex === i ? 'Copied' : 'Copy' }}
+        </button>
+      </div>
+      <p class="why" *ngIf="s.why">{{ s.why }}</p>
+    </li>
+  </ul>
+</section>

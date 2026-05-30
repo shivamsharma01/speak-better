@@ -1,0 +1,56 @@
+<section class="card model" *ngIf="modelAnswer?.trim()">
+  <div class="head">
+    <h2>Example answer (AI)</h2>
+    <button
+      type="button"
+      class="play"
+      (click)="speak(modelAnswer)"
+      aria-label="Play example answer aloud"
+    >
+      Play
+    </button>
+  </div>
+  <p class="body">{{ modelAnswer }}</p>
+</section>
+
+<section class="card coach" *ngIf="hasImprovements() && improvements">
+  <h2>How to improve your answer</h2>
+  <dl class="grid">
+    <ng-container *ngIf="improvements.opening">
+      <dt>Opening & structure</dt>
+      <dd>
+        <p>{{ improvements.opening }}</p>
+        <button type="button" class="play sm" (click)="speak(improvements.opening)">
+          Play
+        </button>
+      </dd>
+    </ng-container>
+    <ng-container *ngIf="improvements.wording">
+      <dt>Wording</dt>
+      <dd>
+        <p>{{ improvements.wording }}</p>
+        <button type="button" class="play sm" (click)="speak(improvements.wording)">
+          Play
+        </button>
+      </dd>
+    </ng-container>
+    <ng-container *ngIf="improvements.fillers">
+      <dt>Fillers & fluency</dt>
+      <dd>
+        <p>{{ improvements.fillers }}</p>
+        <button type="button" class="play sm" (click)="speak(improvements.fillers)">
+          Play
+        </button>
+      </dd>
+    </ng-container>
+    <ng-container *ngIf="improvements.other">
+      <dt>Other tips</dt>
+      <dd>
+        <p>{{ improvements.other }}</p>
+        <button type="button" class="play sm" (click)="speak(improvements.other)">
+          Play
+        </button>
+      </dd>
+    </ng-container>
+  </dl>
+</section>
