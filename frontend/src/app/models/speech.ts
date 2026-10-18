@@ -8,6 +8,8 @@ export type ResponseLanguage = 'en' | 'same';
 export interface TranscriptionResponse {
   text: string;
   language: string;
+  textHindi: string;
+  textEnglish: string;
 }
 
 export interface Suggestion {

@@ -1,0 +1,172 @@
+<div class="page">
+  <header class="hero">
+    <h1>AI Speaking Partner</h1>
+    <p class="sub">
+      Talk freely — or say a full idea in Hindi and get natural English back. Coaching runs in the background.
+    </p>
+    <p class="providers" *ngIf="providerLabel">{{ providerLabel }}</p>
+  </header>
+
+  <section class="setup" *ngIf="!session || reviewMode">
+    <label class="field">
+      Topic
+      <input [(ngModel)]="topic" name="topic" placeholder="e.g. Weekend plans" />
+    </label>
+    <label class="field">
+      Mode
+      <select [(ngModel)]="mode" name="mode">
+        <option value="JUST_TALK">Just Talk — English conversation</option>
+        <option value="COACH_ME">Coach Me — English + richer wording tips</option>
+        <option value="HINDI_TO_ENGLISH">Hindi → English — say it in Hindi, hear it in English</option>
+      </select>
+    </label>
+    <p class="hint" *ngIf="mode === 'HINDI_TO_ENGLISH'">
+      Speak (or type) a complete thought in Hindi. The coach replies with the same idea in natural English and reads it aloud.
+    </p>
+    <label class="field">
+      Level
+      <select [(ngModel)]="level" name="level">
+        <option value="beginner">Beginner</option>
+        <option value="intermediate">Intermediate</option>
+        <option value="advanced">Advanced</option>
+      </select>
+    </label>
+    <button type="button" class="primary" (click)="startSession()" [disabled]="processing || !topic.trim()">
+      {{ processing ? 'Starting…' : 'Start conversation' }}
+    </button>
+    <p class="hint" *ngIf="!sttSupported">
+      Live mic needs Chrome or Edge (Web Speech). You can still type replies.
+    </p>
+  </section>
+
+  <p class="error" *ngIf="error">{{ error }}</p>
+
+  <div class="room" *ngIf="session">
+    <aside class="meta">
+      <div>
+        <strong>{{ session.topic }}</strong>
+        <span class="pill">{{ session.mode }}</span>
+        <span class="pill soft">{{ session.status }}</span>
+      </div>
+      <div class="actions" *ngIf="session.status === 'active'">
+        <button type="button" (click)="toggleListen()" [class.live]="listening">
+          {{ listening ? 'Pause mic' : 'Resume mic' }}
+        </button>
+        <button
+          type="button"
+          class="primary"
+          (click)="finishSpeaking()"
+          [disabled]="!listening || processing || !holdingSpeech"
+          title="Send your current speech now instead of waiting for a pause"
+        >
+          I'm done
+        </button>
+        <button type="button" class="danger" (click)="endSession()" [disabled]="processing">
+          End &amp; review
+        </button>
+      </div>
+    </aside>
+
+    <div class="layout">
+      <section class="transcript" aria-live="polite">
+        <h2>Live transcript</h2>
+        <div class="turn" *ngFor="let t of turns" [class.student]="t.role === 'STUDENT'" [class.ai]="t.role === 'ASSISTANT'">
+          <span class="who">{{ t.role === 'STUDENT' ? 'You' : 'AI partner' }}</span>
+          <p>{{ t.text }}</p>
+          <small *ngIf="t.source === 'SPEECH'">spoken</small>
+          <small *ngIf="t.source === 'TYPED'">typed</small>
+        </div>
+        <div class="interim" *ngIf="interimText">
+          <span class="who">You (draft — waiting for a pause…)</span>
+          <p>{{ interimText }}</p>
+        </div>
+        <p class="muted" *ngIf="holdingSpeech && !processing">
+          Keep talking — we send after ~2s of silence, or tap <strong>I'm done</strong>.
+        </p>
+        <p class="muted" *ngIf="processing">AI is thinking…</p>
+      </section>
+
+      <section class="coach">
+        <h2>{{ isHindiToEnglish ? 'English for your idea' : 'Word upgrades & coaching' }}</h2>
+        <p class="muted tip-line" *ngIf="!isHindiToEnglish">
+          Focus: sharper words you already know but didn’t reach for while speaking.
+        </p>
+        <p class="muted tip-line" *ngIf="isHindiToEnglish">
+          You speak Hindi; the partner replies in English. Phrase bank keeps useful English chunks.
+        </p>
+        <p class="muted" *ngIf="!coachingNotes.length">Tips appear after each of your turns (async).</p>
+        <article
+          class="note"
+          *ngFor="let c of coachingNotes"
+          [class.upgrade]="c.status === 'ready' && isWordUpgrade(c)"
+        >
+          <ng-container *ngIf="c.status === 'pending'">
+            <span class="pill soft">Looking for richer wording…</span>
+            <p class="orig">“{{ c.originalText }}”</p>
+          </ng-container>
+          <ng-container *ngIf="c.status === 'ready'">
+            <span class="pill" [class.upgrade-pill]="isWordUpgrade(c)">{{ issueLabel(c) }}</span>
+            <span class="pill soft" *ngIf="!c.error">not a mistake</span>
+            <p class="orig">You said: “{{ c.originalText }}”</p>
+            <p class="fix" *ngIf="c.correction"><strong>Try:</strong> {{ c.correction }}</p>
+            <p class="phrase" *ngIf="c.usefulPhrase">
+              <strong>Remember:</strong> <em>{{ c.usefulPhrase }}</em>
+            </p>
+            <p class="when" *ngIf="c.whenToUse">{{ c.whenToUse }}</p>
+            <p *ngIf="c.naturalAlternative"><strong>Also natural:</strong> {{ c.naturalAlternative }}</p>
+            <p class="explain" *ngIf="c.explanation">{{ c.explanation }}</p>
+          </ng-container>
+        </article>
+
+        <div class="phrase-bank" *ngIf="phraseBank.length">
+          <h3>Phrase bank (reuse next time)</h3>
+          <ul>
+            <li *ngFor="let v of phraseBank">
+              <em>{{ v.phrase }}</em>
+              <span *ngIf="v.insteadOf"> — instead of “{{ v.insteadOf }}”</span>
+              <small *ngIf="v.whenToUse"> · {{ v.whenToUse }}</small>
+            </li>
+          </ul>
+        </div>
+
+        <div class="patterns" *ngIf="session.patterns?.length">
+          <h3>Recurring patterns</h3>
+          <ul>
+            <li *ngFor="let p of session.patterns">
+              <strong>{{ p.issueType }}</strong> ×{{ p.count }} —
+              “{{ p.exampleOriginal }}” → “{{ p.exampleCorrection }}”
+            </li>
+          </ul>
+        </div>
+
+        <div class="review" *ngIf="session.reviewSummary">
+          <h3>Session review</h3>
+          <p>{{ session.reviewSummary }}</p>
+        </div>
+      </section>
+    </div>
+
+    <form class="composer" *ngIf="session.status === 'active'" (ngSubmit)="sendTyped()">
+      <input
+        [(ngModel)]="typedText"
+        name="typed"
+        [placeholder]="isHindiToEnglish ? 'हिंदी में पूरा विचार टाइप करें…' : 'Type if mic misses you…'"
+        [disabled]="processing"
+        autocomplete="off"
+      />
+      <button type="submit" [disabled]="processing || !typedText.trim()">Send</button>
+    </form>
+  </div>
+
+  <section class="history" *ngIf="pastSessions.length">
+    <h2>Past sessions</h2>
+    <ul>
+      <li *ngFor="let s of pastSessions">
+        <button type="button" class="linkish" (click)="openPast(s.id)">
+          {{ s.topic }}
+          <span>{{ s.status }} · {{ s.createdAt | date: 'short' }}</span>
+        </button>
+      </li>
+    </ul>
+  </section>
+</div>

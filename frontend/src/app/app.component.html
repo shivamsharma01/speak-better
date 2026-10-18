@@ -1,130 +1,17 @@
-<div class="page">
-  <header class="hero">
-    <h1>{{ title }}</h1>
-    <p class="sub">
-      Record or <strong>upload</strong> audio/video (e.g. WebM, MP3, MP4 with sound). We transcribe with Whisper,
-      then suggest clearer phrasing. Coaching defaults to <strong>English</strong>; switch to
-      <strong>Match spoken language</strong> if you want Hindi (or mixed) suggestions. Optionally add a <strong>question</strong> you are answering to get an
-      example answer and targeted coaching.
-    </p>
+<div class="shell">
+  <header class="top-nav">
+    <a routerLink="/" class="brand">Speak Better</a>
+    <nav class="links">
+      <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
+        English practice
+      </a>
+      <a routerLink="/speaking" routerLinkActive="active">
+        Speaking partner
+      </a>
+      <a routerLink="/consultation" routerLinkActive="active">
+        Doctor–patient
+      </a>
+    </nav>
   </header>
-
-  <section class="panel">
-    <label class="field block">
-      <span>Question you are answering (optional)</span>
-      <textarea
-        rows="3"
-        placeholder="e.g. Why should we hire you? / आपकी सबसे बड़ी ताकत क्या है?"
-        [ngModel]="questionText()"
-        (ngModelChange)="questionText.set($event)"
-        [disabled]="processing()"
-      ></textarea>
-    </label>
-  </section>
-
-  <section class="controls">
-    <label class="field">
-      <span>Speech language hint</span>
-      <select
-        [ngModel]="language()"
-        (ngModelChange)="language.set($event)"
-        [disabled]="processing()"
-      >
-        <option value="auto">Auto-detect</option>
-        <option value="en">English</option>
-        <option value="hi">Hindi</option>
-      </select>
-    </label>
-    <label class="field">
-      <span>Response language (coaching)</span>
-      <select
-        [ngModel]="responseLanguage()"
-        (ngModelChange)="responseLanguage.set($event)"
-        [disabled]="processing()"
-      >
-        <option value="en">English (default)</option>
-        <option value="same">Match spoken language</option>
-      </select>
-    </label>
-    <label class="field">
-      <span>Tone for suggestions</span>
-      <select
-        [ngModel]="tone()"
-        (ngModelChange)="tone.set($event)"
-        [disabled]="processing()"
-      >
-        <option value="">Default (varied)</option>
-        <option value="formal">Formal</option>
-        <option value="casual">Casual</option>
-        <option value="persuasive">Persuasive</option>
-        <option value="concise">Concise</option>
-      </select>
-    </label>
-    <button
-      type="button"
-      class="ghost"
-      *ngIf="hasResults()"
-      (click)="clearResults()"
-      [disabled]="processing()"
-    >
-      Clear results
-    </button>
-  </section>
-
-  <section class="capture">
-    <app-recorder
-      [locked]="processing()"
-      (audioReady)="onAudioReady($event)"
-      (recordError)="onRecordError($event)"
-    />
-    <div class="upload-wrap">
-      <input
-        #fileInput
-        type="file"
-        class="sr-only"
-        accept="audio/*,video/mp4,.mp4,.webm,.m4a,.mp3,.wav,.mpeg,.mpga"
-        [disabled]="processing()"
-        (change)="onFileSelected($event)"
-      />
-      <button
-        type="button"
-        class="upload-btn"
-        [disabled]="processing()"
-        (click)="triggerFilePicker(fileInput)"
-      >
-        Upload audio or video
-      </button>
-      <p class="upload-hint">
-        Whisper accepts common formats (including <strong>MP4</strong> if the file has an
-        <strong>audio track</strong>). Video-only or silent files may fail.
-      </p>
-    </div>
-  </section>
-
-  <p class="tts-hint">
-    <strong>Play</strong> uses your browser voice. When coaching is in <strong>English</strong>, playback uses
-    English. For <strong>Match spoken language</strong>, pick <strong>Hindi</strong> under speech hint if your
-    transcript is Hindi so Play sounds right.
-  </p>
-
-  <div class="status" *ngIf="processing()">
-    <span class="spinner" aria-hidden="true"></span>
-    Transcribing and analyzing…
-  </div>
-
-  <p class="alert" *ngIf="error() as err">{{ err }}</p>
-
-  <main class="results" *ngIf="hasResults()">
-    <app-transcript [text]="transcript()" />
-    <app-suggestions [suggestions]="suggestions()" [speakLang]="ttsSpeakLang()" />
-    <app-coaching-panel
-      [modelAnswer]="modelAnswer()"
-      [improvements]="improvements()"
-      [speakLang]="ttsSpeakLang()"
-    />
-  </main>
-
-  <footer class="foot">
-    <small>Powered by Groq (Whisper + Llama). Set <code>GROQ_API_KEY</code> for the backend.</small>
-  </footer>
+  <router-outlet />
 </div>

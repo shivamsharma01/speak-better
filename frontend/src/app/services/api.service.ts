@@ -6,6 +6,14 @@ import type {
   ResponseLanguage,
   TranscriptionResponse,
 } from '../models/speech';
+import type { ConversationResponse } from '../models/conversation';
+
+export interface TranscribeRephraseOptions {
+  tone?: string | null;
+  question?: string | null;
+  filename?: string;
+  responseLanguage?: ResponseLanguage;
+}
 
 @Injectable({ providedIn: 'root' })
 export class ApiService {
@@ -56,22 +64,36 @@ export class ApiService {
   transcribeAndRephrase(
     audio: Blob,
     language: string,
-    options?: {
-      tone?: string | null;
-      question?: string | null;
-      filename?: string;
-      responseLanguage?: ResponseLanguage;
-    },
+    options?: TranscribeRephraseOptions,
   ): Observable<{ transcript: TranscriptionResponse; rephrase: RephraseResponse }> {
     const filename = options?.filename ?? 'recording.webm';
+    const responseLanguage = options?.responseLanguage ?? 'en';
+
     return this.transcribe(audio, language, filename).pipe(
-      switchMap((transcript) =>
-        this.rephrase(transcript.text, language, {
+      switchMap((transcript) => {
+        const textForCoach =
+          responseLanguage === 'en' && transcript.textEnglish?.trim()
+            ? transcript.textEnglish.trim()
+            : transcript.text;
+        return this.rephrase(textForCoach, language, {
           tone: options?.tone,
           question: options?.question,
-          responseLanguage: options?.responseLanguage ?? 'en',
-        }).pipe(map((rephrase) => ({ transcript, rephrase }))),
-      ),
+          responseLanguage,
+        }).pipe(map((rephrase) => ({ transcript, rephrase })));
+      }),
     );
+  }
+
+  processConversation(
+    audio: Blob,
+    language: string,
+    filename = 'recording.webm',
+  ): Observable<ConversationResponse> {
+    const form = new FormData();
+    form.append('audio', audio, filename);
+    if (language && language !== 'auto') {
+      form.append('language', language);
+    }
+    return this.http.post<ConversationResponse>('/api/conversation/process', form);
   }
 }

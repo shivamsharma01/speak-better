@@ -66,16 +66,49 @@ Open **http://localhost:4200** (proxies `/api` → `8080` via [`frontend/proxy.c
 | `GROQ_API_KEY` | Groq bearer token (required) |
 | `groq.base-url` | Default `https://api.groq.com/openai/v1` in [`backend/src/main/resources/application.yml`](backend/src/main/resources/application.yml) |
 | `groq.stt-model` | Default `whisper-large-v3` |
-| `groq.chat-model` | Default `llama-3.3-70b-versatile` |
+| `groq.chat-model` | Default `openai/gpt-oss-120b` (best quality; low TPM on free tier — used for consultation structuring) |
+| `groq.chat-model-fast` | Default `openai/gpt-oss-20b` (refine, summaries, practice coaching — separate TPM pool) |
 
 ## API
 
 | Method | Path | Description |
 |--------|------|-------------|
-| `POST` | `/api/transcribe` | `multipart/form-data`: part `audio` (file), optional `language` (`en`, `hi`, or omit with Auto) |
-| `POST` | `/api/rephrase` | JSON `{ "text", "language"?, "tone"?, "question"?, "responseLanguage"? }` → `{ "suggestions", "modelAnswer", "improvements" }`. **`responseLanguage`**: omit or `"en"` (default) — all coaching strings in **English**; `"same"` — match transcript language (previous behavior). If `question` is set, `modelAnswer` is a full example answer. If `question` is omitted, `modelAnswer` is empty. |
+| `POST` | `/api/transcribe` | `multipart/form-data`: part `audio` (file), optional `language` (`en`, `hi`, or omit with Auto). Returns `{ text, language, textHindi, textEnglish }` — full utterance in Devanagari Hindi and English (via Whisper + LLM normalization). |
+| `POST` | `/api/rephrase` | JSON `{ "text", "language"?, "tone"?, "question"?, "responseLanguage"? }` → coaching JSON. |
+| `POST` | `/api/conversation/process` | `multipart/form-data`: part `audio`, optional `language`. Doctor–patient pipeline: Whisper → dialogue split + Hindi/English → **refinement pass** → bilingual clinical summaries. |
 
 CORS is enabled for `http://localhost:4200`.
+
+### Pages
+
+- **`/`** — English practice (rephrasing + coaching)
+- **`/speaking`** — AI Speaking Partner (live turn-taking POC)
+- **`/consultation`** — Doctor–patient conversation transcript + summaries
+
+### AI Speaking Partner (POC)
+
+Real-time conversation for personal use. Conversation and coaching are **decoupled**: the AI replies first; corrections arrive asynchronously and are stored for later review.
+
+| Layer | Free POC default | Swap how |
+|-------|------------------|----------|
+| STT | Browser Web Speech API (Chrome/Edge) | Frontend `SPEECH_TO_TEXT` token in `app.config.ts` |
+| Conversation LLM | Groq (`speaking.conversation-provider=groq`) | New `ConversationEngine` bean + yaml |
+| Coaching LLM | Groq (`speaking.coaching-provider=groq`) | New `CoachingEngine` bean + yaml |
+| TTS | Browser `speechSynthesis` | Frontend `TEXT_TO_SPEECH` token |
+| Session log | JSON files under `./data/speaking/` | `SpeakingSessionRepository` |
+
+API:
+
+| Method | Path | Role |
+|--------|------|------|
+| `GET` | `/api/speaking/providers` | Active provider IDs |
+| `POST` | `/api/speaking/sessions` | Start session (`topic`, `mode`, `level`) |
+| `POST` | `/api/speaking/sessions/{id}/turns` | Student text → AI reply (+ async coaching) |
+| `GET` | `/api/speaking/sessions/{id}` | Full transcript, corrections, patterns |
+| `GET` | `/api/speaking/sessions` | Past sessions (revise later) |
+| `POST` | `/api/speaking/sessions/{id}/end` | End + short review summary |
+
+Use **Chrome or Edge** for the mic. Typing always works as a fallback. Groq free tier is enough for light personal use; expect rate limits on long daily sessions (~2h/day may need a small paid plan later).
 
 ### Upload formats
 

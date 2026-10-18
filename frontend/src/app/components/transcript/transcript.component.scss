@@ -1,3 +1,18 @@
+.transcript-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.section-title {
+  margin: 0;
+  font-size: 0.85rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: rgba(148, 163, 184, 0.95);
+}
+
 .card {
   background: rgba(15, 23, 42, 0.65);
   border: 1px solid rgba(148, 163, 184, 0.25);
@@ -6,8 +21,24 @@
   backdrop-filter: blur(8px);
 }
 
-h2 {
-  margin: 0 0 0.75rem;
+.hindi {
+  border-color: rgba(251, 191, 36, 0.35);
+}
+
+.english {
+  border-color: rgba(56, 189, 248, 0.35);
+}
+
+.head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
+h3 {
+  margin: 0;
   font-size: 0.85rem;
   font-weight: 600;
   letter-spacing: 0.04em;
@@ -21,4 +52,19 @@ h2 {
   line-height: 1.55;
   color: #f1f5f9;
   white-space: pre-wrap;
+}
+
+.play {
+  border: 1px solid rgba(56, 189, 248, 0.45);
+  background: rgba(14, 116, 144, 0.35);
+  color: #e0f2fe;
+  border-radius: 0.5rem;
+  padding: 0.35rem 0.75rem;
+  font-size: 0.85rem;
+  cursor: pointer;
+  flex-shrink: 0;
+
+  &:hover {
+    border-color: rgba(125, 211, 252, 0.75);
+  }
 }

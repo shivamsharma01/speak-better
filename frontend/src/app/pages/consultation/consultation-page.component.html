@@ -1,0 +1,161 @@
+<div class="page">
+  <header class="hero">
+    <h1>Doctor–patient consultation</h1>
+    <p class="sub">
+      Record or upload a <strong>two-person</strong> conversation. We transcribe with Whisper,
+      split turns into <strong>doctor</strong> and <strong>patient</strong>, translate to Hindi and English
+      (with a <strong>second-pass accuracy review</strong>), then summarize key clinical points.
+    </p>
+  </header>
+
+  <section class="controls">
+    <label class="field">
+      <span>Speech language hint</span>
+      <select
+        [ngModel]="language()"
+        (ngModelChange)="language.set($event)"
+        [disabled]="processing()"
+      >
+        <option value="auto">Auto-detect</option>
+        <option value="en">English</option>
+        <option value="hi">Hindi</option>
+      </select>
+    </label>
+    <label class="field">
+      <span>Transcript view</span>
+      <select
+        [ngModel]="transcriptView()"
+        (ngModelChange)="transcriptView.set($event)"
+        [disabled]="processing()"
+      >
+        <option value="both">Hindi + English</option>
+        <option value="hindi">Hindi only</option>
+        <option value="english">English only</option>
+      </select>
+    </label>
+    <button
+      type="button"
+      class="ghost"
+      *ngIf="result()"
+      (click)="clearResults()"
+      [disabled]="processing()"
+    >
+      Clear
+    </button>
+  </section>
+
+  <section class="capture">
+    <app-recorder
+      [locked]="processing()"
+      (audioReady)="onAudioReady($event)"
+      (recordError)="onRecordError($event)"
+    />
+    <div class="upload-wrap">
+      <input
+        #fileInput
+        type="file"
+        class="sr-only"
+        accept="audio/*,video/mp4,.mp4,.webm,.m4a,.mp3,.wav,.mpeg,.mpga"
+        [disabled]="processing()"
+        (change)="onFileSelected($event)"
+      />
+      <button
+        type="button"
+        class="upload-btn"
+        [disabled]="processing()"
+        (click)="triggerFilePicker(fileInput)"
+      >
+        Upload consultation recording
+      </button>
+      <p class="hint">
+        For best speaker separation, use a clear recording with both voices. Longer visits may take a minute.
+      </p>
+    </div>
+  </section>
+
+  <div class="status" *ngIf="processing()">
+    <span class="spinner" aria-hidden="true"></span>
+    <span>
+      Transcribing → structuring dialogue → refining translations → summarizing…
+    </span>
+    <button type="button" class="cancel-btn" (click)="cancelProcessing()">Cancel</button>
+  </div>
+
+  <p class="alert" *ngIf="error() as err">{{ err }}</p>
+
+  <ng-container *ngIf="result() as data">
+    <section class="dialogue">
+      <h2>Conversation transcript</h2>
+      <p class="raw" *ngIf="data.rawTranscript">
+        <span class="label">Raw STT (reference):</span> {{ data.rawTranscript }}
+      </p>
+      <ul class="turns">
+        <li
+          *ngFor="let turn of data.turns"
+          class="turn"
+          [class.doctor]="turn.speaker === 'doctor'"
+          [class.patient]="turn.speaker !== 'doctor'"
+        >
+          <div class="badge">{{ speakerLabel(turn.speaker) }}</div>
+          <div class="bubbles">
+            <div class="bubble hi" *ngIf="transcriptView() !== 'english' && turn.textHindi">
+              <div class="bubble-head">
+                <span>हिंदी</span>
+                <button type="button" class="play" (click)="speak(turn.textHindi, 'hi')">Play</button>
+              </div>
+              <p>{{ turn.textHindi }}</p>
+            </div>
+            <div class="bubble en" *ngIf="transcriptView() !== 'hindi' && turn.textEnglish">
+              <div class="bubble-head">
+                <span>English</span>
+                <button type="button" class="play" (click)="speak(turn.textEnglish, 'en')">Play</button>
+              </div>
+              <p>{{ turn.textEnglish }}</p>
+            </div>
+          </div>
+        </li>
+      </ul>
+    </section>
+
+    <section class="summaries">
+      <h2>Clinical summary</h2>
+      <div class="summary-grid">
+        <article class="summary-card">
+          <h3>English</h3>
+          <ng-container *ngTemplateOutlet="summaryBlock; context: { $implicit: data.summaryEnglish }" />
+        </article>
+        <article class="summary-card hindi-card">
+          <h3>हिंदी</h3>
+          <ng-container *ngTemplateOutlet="summaryBlock; context: { $implicit: data.summaryHindi }" />
+        </article>
+      </div>
+    </section>
+  </ng-container>
+</div>
+
+<ng-template #summaryBlock let-summary>
+  <dl class="summary-dl">
+    <dt>Chief complaint</dt>
+    <dd>{{ summary.chiefComplaint || '—' }}</dd>
+    <dt>Key points</dt>
+    <dd>
+      <ul *ngIf="summary.keyPoints?.length; else noPoints">
+        <li *ngFor="let p of summary.keyPoints">{{ p }}</li>
+      </ul>
+      <ng-template #noPoints>—</ng-template>
+    </dd>
+    <dt>Assessment</dt>
+    <dd>{{ summary.assessment || '—' }}</dd>
+    <dt>Plan</dt>
+    <dd>{{ summary.plan || '—' }}</dd>
+    <dt>Follow-up</dt>
+    <dd>{{ summary.followUp || '—' }}</dd>
+    <dt>Medications mentioned</dt>
+    <dd>
+      <ul *ngIf="summary.medicationsMentioned?.length; else noMeds">
+        <li *ngFor="let m of summary.medicationsMentioned">{{ m }}</li>
+      </ul>
+      <ng-template #noMeds>—</ng-template>
+    </dd>
+  </dl>
+</ng-template>

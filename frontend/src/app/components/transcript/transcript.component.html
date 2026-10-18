@@ -1,4 +1,33 @@
-<section class="card" *ngIf="text">
-  <h2>What you said</h2>
-  <p class="body">{{ text }}</p>
+<section class="transcript-wrap" *ngIf="showHindi() || showEnglish()">
+  <h2 class="section-title">Transcript</h2>
+
+  <article class="card hindi" *ngIf="showHindi()">
+    <div class="head">
+      <h3>हिंदी</h3>
+      <button
+        type="button"
+        class="play"
+        (click)="speak(hindiDisplay(), 'hi')"
+        aria-label="Play Hindi transcript"
+      >
+        Play
+      </button>
+    </div>
+    <p class="body">{{ hindiDisplay() }}</p>
+  </article>
+
+  <article class="card english" *ngIf="showEnglish()">
+    <div class="head">
+      <h3>English</h3>
+      <button
+        type="button"
+        class="play"
+        (click)="speak(englishDisplay(), 'en')"
+        aria-label="Play English transcript"
+      >
+        Play
+      </button>
+    </div>
+    <p class="body">{{ englishDisplay() }}</p>
+  </article>
 </section>

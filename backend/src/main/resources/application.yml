@@ -2,7 +2,15 @@ groq:
   api-key: ${GROQ_API_KEY:}
   base-url: https://api.groq.com/openai/v1
   stt-model: whisper-large-v3
-  chat-model: llama-3.3-70b-versatile
+  chat-model: openai/gpt-oss-120b
+  chat-model-fast: openai/gpt-oss-20b
+
+# Provider IDs are swappable. Free POC: groq chat + browser STT/TTS (frontend adapters).
+speaking:
+  conversation-provider: groq
+  coaching-provider: groq
+  data-dir: ${SPEAKING_DATA_DIR:./data/speaking}
+  max-context-turns: 16
 
 spring:
   servlet:
