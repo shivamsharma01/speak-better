@@ -2,6 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import type {
+  DrillAttemptResponse,
   ProviderInfo,
   SpeakingMode,
   SpeakingSession,
@@ -42,6 +43,28 @@ export class SpeakingApiService {
       text,
       source,
     });
+  }
+
+  submitDrillAttempt(
+    sessionId: string,
+    text: string,
+    source: UtteranceSource,
+  ): Observable<DrillAttemptResponse> {
+    return this.http.post<DrillAttemptResponse>(
+      `/api/speaking/sessions/${sessionId}/drill/attempt`,
+      { text, source },
+    );
+  }
+
+  submitDrillRetell(
+    sessionId: string,
+    text: string,
+    source: UtteranceSource,
+  ): Observable<SpeakingSession> {
+    return this.http.post<SpeakingSession>(
+      `/api/speaking/sessions/${sessionId}/drill/retell`,
+      { text, source },
+    );
   }
 
   endSession(sessionId: string): Observable<SpeakingSession> {

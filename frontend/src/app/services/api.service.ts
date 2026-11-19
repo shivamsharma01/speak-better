@@ -32,6 +32,20 @@ export class ApiService {
     return this.http.post<TranscriptionResponse>('/api/transcribe', form);
   }
 
+  /** Whisper-only STT (no bilingual). Better for Indian-accented English than browser Web Speech. */
+  transcribeStt(
+    audio: Blob,
+    language = 'en',
+    filename = 'drill.webm',
+  ): Observable<{ text: string }> {
+    const form = new FormData();
+    form.append('audio', audio, filename);
+    if (language && language !== 'auto') {
+      form.append('language', language);
+    }
+    return this.http.post<{ text: string }>('/api/transcribe-stt', form);
+  }
+
   rephrase(
     text: string,
     language: string,

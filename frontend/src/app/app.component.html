@@ -1,17 +1,25 @@
 <div class="shell">
   <header class="top-nav">
-    <a routerLink="/" class="brand">Speak Better</a>
-    <nav class="links">
+    <a routerLink="/" class="brand" aria-label="Speak Better home">
+      <span class="mark" aria-hidden="true"></span>
+      <span class="brand-text">
+        <span class="name">Speak Better</span>
+        <span class="tag">spoken English coach</span>
+      </span>
+    </a>
+    <nav class="links" aria-label="Primary">
       <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
-        English practice
+        Practice
       </a>
       <a routerLink="/speaking" routerLinkActive="active">
-        Speaking partner
+        Partner
       </a>
       <a routerLink="/consultation" routerLinkActive="active">
-        Doctor–patient
+        Consultation
       </a>
     </nav>
   </header>
-  <router-outlet />
+  <main class="shell-main">
+    <router-outlet />
+  </main>
 </div>

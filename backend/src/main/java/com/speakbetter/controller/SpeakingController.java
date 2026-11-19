@@ -3,6 +3,7 @@ package com.speakbetter.controller;
 import com.speakbetter.speaking.SpeakingSessionService;
 import com.speakbetter.speaking.domain.SpeakingSession;
 import com.speakbetter.speaking.dto.CreateSessionRequest;
+import com.speakbetter.speaking.dto.DrillAttemptResponse;
 import com.speakbetter.speaking.dto.SubmitTurnRequest;
 import com.speakbetter.speaking.dto.TurnResponse;
 import jakarta.validation.Valid;
@@ -50,6 +51,22 @@ public class SpeakingController {
     @PostMapping("/sessions/{id}/turns")
     public TurnResponse turn(@PathVariable String id, @Valid @RequestBody SubmitTurnRequest request) {
         return speakingSessionService.submitTurn(id, request.text(), request.resolvedSource());
+    }
+
+    @PostMapping("/sessions/{id}/drill/attempt")
+    public DrillAttemptResponse drillAttempt(
+            @PathVariable String id,
+            @Valid @RequestBody SubmitTurnRequest request
+    ) {
+        return speakingSessionService.submitDrillAttempt(id, request.text(), request.resolvedSource());
+    }
+
+    @PostMapping("/sessions/{id}/drill/retell")
+    public SpeakingSession drillRetell(
+            @PathVariable String id,
+            @Valid @RequestBody SubmitTurnRequest request
+    ) {
+        return speakingSessionService.submitFullChatRetelling(id, request.text(), request.resolvedSource());
     }
 
     @PostMapping("/sessions/{id}/end")

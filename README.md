@@ -104,9 +104,13 @@ API:
 | `GET` | `/api/speaking/providers` | Active provider IDs |
 | `POST` | `/api/speaking/sessions` | Start session (`topic`, `mode`, `level`) |
 | `POST` | `/api/speaking/sessions/{id}/turns` | Student text → AI reply (+ async coaching) |
+| `POST` | `/api/speaking/sessions/{id}/drill/attempt` | Hinglish drill: English attempt for current item → score |
+| `POST` | `/api/speaking/sessions/{id}/drill/retell` | Chat drill: full English retelling → turn-by-turn scores |
 | `GET` | `/api/speaking/sessions/{id}` | Full transcript, corrections, patterns |
 | `GET` | `/api/speaking/sessions` | Past sessions (revise later) |
 | `POST` | `/api/speaking/sessions/{id}/end` | End + short review summary |
+
+Speaking modes include `JUST_TALK`, `COACH_ME`, `HINDI_TO_ENGLISH`, `HINGLISH_SENTENCE` (5 Hinglish lines → English voice), and `HINGLISH_CHAT` (generated Hinglish dialogue → English turn-by-turn or full retell).
 
 Use **Chrome or Edge** for the mic. Typing always works as a fallback. Groq free tier is enough for light personal use; expect rate limits on long daily sessions (~2h/day may need a small paid plan later).
 

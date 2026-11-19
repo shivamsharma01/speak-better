@@ -34,6 +34,18 @@ public class SpeechController {
         return groqService.transcribe(audio, language);
     }
 
+    /**
+     * Whisper-only transcription (no bilingual pass) — used by speaking drills for accurate STT.
+     */
+    @PostMapping(value = "/transcribe-stt", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public java.util.Map<String, String> transcribeStt(
+            @RequestPart("audio") MultipartFile audio,
+            @RequestParam(value = "language", required = false) String language
+    ) {
+        String text = groqService.transcribeRaw(audio, language);
+        return java.util.Map.of("text", text != null ? text : "");
+    }
+
     @PostMapping(value = "/rephrase", consumes = MediaType.APPLICATION_JSON_VALUE)
     public RephraseResponse rephrase(@Valid @RequestBody RephraseRequest request) {
         return groqService.rephrase(

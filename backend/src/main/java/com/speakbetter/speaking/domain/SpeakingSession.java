@@ -18,6 +18,12 @@ public class SpeakingSession {
     private List<CorrectionEvent> corrections = new ArrayList<>();
     private List<LearnerPattern> patterns = new ArrayList<>();
     private List<VocabularyItem> vocabulary = new ArrayList<>();
+    /** Hinglish drill prompts (sentence or chat turns). */
+    private List<DrillItem> drillItems = new ArrayList<>();
+    private List<DrillEvaluation> drillEvaluations = new ArrayList<>();
+    /** Index of the current drill item awaiting the student's English. */
+    private int currentDrillIndex;
+    private String chatTitle;
     private String reviewSummary;
 
     public String getId() {
@@ -124,11 +130,47 @@ public class SpeakingSession {
         this.vocabulary = vocabulary != null ? vocabulary : new ArrayList<>();
     }
 
+    public List<DrillItem> getDrillItems() {
+        return drillItems;
+    }
+
+    public void setDrillItems(List<DrillItem> drillItems) {
+        this.drillItems = drillItems != null ? drillItems : new ArrayList<>();
+    }
+
+    public List<DrillEvaluation> getDrillEvaluations() {
+        return drillEvaluations;
+    }
+
+    public void setDrillEvaluations(List<DrillEvaluation> drillEvaluations) {
+        this.drillEvaluations = drillEvaluations != null ? drillEvaluations : new ArrayList<>();
+    }
+
+    public int getCurrentDrillIndex() {
+        return currentDrillIndex;
+    }
+
+    public void setCurrentDrillIndex(int currentDrillIndex) {
+        this.currentDrillIndex = currentDrillIndex;
+    }
+
+    public String getChatTitle() {
+        return chatTitle;
+    }
+
+    public void setChatTitle(String chatTitle) {
+        this.chatTitle = chatTitle;
+    }
+
     public String getReviewSummary() {
         return reviewSummary;
     }
 
     public void setReviewSummary(String reviewSummary) {
         this.reviewSummary = reviewSummary;
+    }
+
+    public boolean isDrillMode() {
+        return mode == SpeakingMode.HINGLISH_SENTENCE || mode == SpeakingMode.HINGLISH_CHAT;
     }
 }

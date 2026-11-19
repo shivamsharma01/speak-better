@@ -1,3 +1,26 @@
+:root {
+  --ink: #0c1412;
+  --ink-2: #12201c;
+  --panel: rgba(18, 36, 32, 0.72);
+  --panel-solid: #152823;
+  --line: rgba(168, 196, 184, 0.22);
+  --line-strong: rgba(168, 196, 184, 0.4);
+  --text: #e8f2ed;
+  --muted: rgba(184, 204, 194, 0.86);
+  --faint: rgba(148, 172, 162, 0.78);
+  --accent: #2bb673;
+  --accent-2: #1f9a62;
+  --warm: #e8c56b;
+  --warm-soft: rgba(232, 197, 107, 0.18);
+  --info: #6ec8c0;
+  --danger: #f0a3a3;
+  --danger-bg: rgba(110, 32, 32, 0.4);
+  --radius: 0.85rem;
+  --font-display: 'Fraunces', Georgia, serif;
+  --font-body: 'Manrope', system-ui, sans-serif;
+  --shadow-soft: 0 18px 50px rgba(0, 0, 0, 0.28);
+}
+
 *,
 *::before,
 *::after {
@@ -11,16 +34,51 @@ body {
 
 body {
   margin: 0;
-  font-family:
-    system-ui,
-    -apple-system,
-    Segoe UI,
-    Roboto,
-    Ubuntu,
-    Cantarell,
-    Noto Sans,
-    sans-serif;
-  background: radial-gradient(1200px 600px at 50% -10%, #1e3a5f, #0b1220 55%);
-  color: #e2e8f0;
+  font-family: var(--font-body);
+  color: var(--text);
   min-height: 100%;
+  background:
+    radial-gradient(900px 520px at 12% -8%, rgba(43, 182, 115, 0.18), transparent 55%),
+    radial-gradient(700px 480px at 92% 8%, rgba(232, 197, 107, 0.12), transparent 50%),
+    linear-gradient(165deg, #101c19 0%, var(--ink) 42%, #0a1210 100%);
+  background-attachment: fixed;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+::selection {
+  background: rgba(43, 182, 115, 0.35);
+  color: #fff;
+}
+
+@keyframes rise-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes soft-pulse {
+  0%,
+  100% {
+    opacity: 0.55;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
 }

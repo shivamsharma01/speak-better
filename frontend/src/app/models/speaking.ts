@@ -1,4 +1,9 @@
-export type SpeakingMode = 'JUST_TALK' | 'COACH_ME' | 'HINDI_TO_ENGLISH';
+export type SpeakingMode =
+  | 'JUST_TALK'
+  | 'COACH_ME'
+  | 'HINDI_TO_ENGLISH'
+  | 'HINGLISH_SENTENCE'
+  | 'HINGLISH_CHAT';
 export type TurnRole = 'STUDENT' | 'ASSISTANT' | 'SYSTEM';
 export type UtteranceSource = 'SPEECH' | 'TYPED';
 
@@ -47,6 +52,31 @@ export interface LearnerPattern {
   lastSeenAt?: string;
 }
 
+export interface DrillItem {
+  id: string;
+  index: number;
+  speaker?: string | null;
+  hinglish: string;
+  modelEnglish: string;
+  status: string;
+}
+
+export interface DrillEvaluation {
+  id: string;
+  drillItemId: string;
+  drillIndex: number;
+  studentEnglish: string;
+  modelEnglish: string;
+  hinglish: string;
+  score: number;
+  meaningPreserved: boolean;
+  verdict: string;
+  betterEnglish: string;
+  usefulPhrase?: string;
+  tip?: string;
+  createdAt: string;
+}
+
 export interface SpeakingSession {
   id: string;
   mode: SpeakingMode;
@@ -61,6 +91,10 @@ export interface SpeakingSession {
   corrections: CorrectionEvent[];
   patterns: LearnerPattern[];
   vocabulary?: VocabularyItem[];
+  drillItems?: DrillItem[];
+  drillEvaluations?: DrillEvaluation[];
+  currentDrillIndex?: number;
+  chatTitle?: string;
   reviewSummary?: string;
 }
 
@@ -69,6 +103,16 @@ export interface TurnResponse {
   studentTurn: SpeakingTurn;
   assistantTurn: SpeakingTurn;
   coachingPending: boolean;
+}
+
+export interface DrillAttemptResponse {
+  sessionId: string;
+  studentTurn: SpeakingTurn;
+  evaluation: DrillEvaluation;
+  nextItem: DrillItem | null;
+  currentDrillIndex: number;
+  drillComplete: boolean;
+  evaluations: DrillEvaluation[];
 }
 
 export interface ProviderInfo {

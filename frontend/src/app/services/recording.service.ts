@@ -30,12 +30,25 @@ export class RecordingService {
   }
 
   async start(): Promise<void> {
-    if (this.stateSubject.value === 'recording') {
+    if (this.stateSubject.value === 'recording' && this.mediaRecorder?.state === 'recording') {
       return;
+    }
+    // Drop any half-cleaned previous session before reopening the mic.
+    if (this.mediaRecorder || this.stream) {
+      await this.cancelAsync();
     }
     this.stopTick();
     this.chunks = [];
-    this.stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+
+    if (!navigator.mediaDevices?.getUserMedia) {
+      throw new Error('This browser cannot access the microphone.');
+    }
+    this.stream = await navigator.mediaDevices.getUserMedia({
+      audio: {
+        echoCancellation: true,
+        noiseSuppression: true,
+      },
+    });
 
     const options: MediaRecorderOptions = {};
     if (MediaRecorder.isTypeSupported('audio/webm;codecs=opus')) {
@@ -72,11 +85,20 @@ export class RecordingService {
 
   async stop(): Promise<Blob> {
     if (!this.mediaRecorder || this.mediaRecorder.state === 'inactive') {
-      throw new Error('Not recording');
+      this.cleanup();
+      throw new Error('Mic was not recording. Tap Record, speak, then Stop.');
     }
 
     return new Promise<Blob>((resolve, reject) => {
       const mr = this.mediaRecorder!;
+      // Request a final chunk so short takes are not empty.
+      try {
+        if (mr.state === 'recording') {
+          mr.requestData();
+        }
+      } catch {
+        /* ignore */
+      }
       mr.onerror = () => {
         this.cleanup();
         reject(new Error('Recording failed'));
@@ -101,6 +123,36 @@ export class RecordingService {
       return this.stop();
     }
     return this.start();
+  }
+
+  /** Stop without returning audio (discard). */
+  cancel(): void {
+    void this.cancelAsync();
+  }
+
+  cancelAsync(): Promise<void> {
+    if (!this.mediaRecorder || this.mediaRecorder.state === 'inactive') {
+      this.cleanup();
+      return Promise.resolve();
+    }
+    const mr = this.mediaRecorder;
+    return new Promise((resolve) => {
+      mr.ondataavailable = null;
+      mr.onerror = () => {
+        this.cleanup();
+        resolve();
+      };
+      mr.onstop = () => {
+        this.cleanup();
+        resolve();
+      };
+      try {
+        mr.stop();
+      } catch {
+        this.cleanup();
+        resolve();
+      }
+    });
   }
 
   private cleanup(): void {
